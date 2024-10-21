@@ -1,32 +1,20 @@
-import os
 import numpy as np
 from util import base64_to_pil
 import pickle
 from flask import Flask, redirect, url_for, request, render_template, Response, jsonify, redirect
-import tensorflow as tf
-from tensorflow.keras.applications.imagenet_utils import preprocess_input, decode_predictions
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
-from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
+from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow import keras
 import cv2
 import os
-
-from keras.preprocessing import image
-from PIL import Image
 import glob
-    
 
-
-Model_json = "model_rumah123.pkl"
-Model_weigths = "model_rumah123.h5"
-
+Model_json = "Airflow/data/model_rumah123.pkl"
 
 # Declare a flask app
 app = Flask(__name__)
 
 def get_ImageClassifierModel():
-    model = pickle.load(open('model_rumah123.pkl', 'rb'))
+    model = pickle.load(open('Airflow/data/model_rumah123.pkl', 'rb'))
     return model  
     
 
