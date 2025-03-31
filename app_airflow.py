@@ -14,7 +14,7 @@ from imblearn.over_sampling import SMOTE
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import pandas as pd
 
-DATA_PATH = 'Airflow/data/*.jpg'
+DATA_PATH = 'sample_images/*.jpg'
 MODEL_PATH = 'Airflow/data/model_rumah123.pkl'    
 
 def load_data_task(data_dir):
