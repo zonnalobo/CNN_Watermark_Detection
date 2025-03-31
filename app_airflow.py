@@ -1,7 +1,8 @@
 from airflow import DAG
 import os
 from airflow.operators.python import PythonOperator
-from airflow.operators.dummy import DummyOperator
+#from airflow.operators.dummy import DummyOperator
+from airflow.operators.empty import EmptyOperator
 from datetime import datetime
 import numpy as np
 import pickle
@@ -10,7 +11,7 @@ from tensorflow import keras
 import cv2
 import glob
 from imblearn.over_sampling import SMOTE
-from keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import pandas as pd
 
 DATA_PATH = 'Airflow/data/*.jpg'
@@ -55,31 +56,11 @@ def train_model(data_dir):
     x_train = x_train.reshape(-1, x_train.shape[1], x_train.shape[2], 1)
     y_train = np.array(y_train)
       
-    sm = SMOTE(random_state=42,sampling_strategy='all')
-    train_rows=len(x_train)
-    x_train = x_train.reshape(train_rows,-1)
-    x_train, y_train = sm.fit_resample(x_train, y_train)
-    x_train = x_train.reshape(-1,128,128,1)
-
-    datagen = ImageDataGenerator(
-            featurewise_center=False,
-            samplewise_center=False,
-            featurewise_std_normalization=False,
-            samplewise_std_normalization=False, 
-            zca_whitening=False,  
-            rotation_range = 30,  
-            zoom_range = 0.2,  
-            width_shift_range=0.1, 
-            height_shift_range=0.1, 
-            horizontal_flip = True, 
-            vertical_flip=False) 
-
-    datagen.fit(x_train)
     model = pickle.load(open(MODEL_PATH, 'rb'))
     epoch =100
     bacth = 20
-    history = model.fit(datagen.flow(x_train,y_train, batch_size = bacth) ,epochs = epoch)
-    pickle.dump(model, open(MODEL_PATH', 'wb'))
+    history = model.fit(x_train,y_train, batch_size = bacth ,epochs = epoch)
+    pickle.dump(model, open(MODEL_PATH, 'wb'))
     return model
 
 # Define DAG and its default arguments
@@ -93,11 +74,11 @@ dag = DAG(
     dag_id='ml_pipeline', 
     default_args=default_args, 
     description='Machine Learning Pipeline', 
-    schedule_interval='@monthly'
+    schedule='@monthly'
 )
 
 # Create tasks for each function
-start_task = DummyOperator(task_id='start', dag=dag)
+start_task = EmptyOperator(task_id='start', dag=dag)
 
 train_model_task = PythonOperator(
     task_id='train_model',
@@ -105,7 +86,7 @@ train_model_task = PythonOperator(
     dag=dag
 )
 
-end_task = DummyOperator(task_id='end', dag=dag)
+end_task = EmptyOperator(task_id='end', dag=dag)
 
 # Set task dependencies
 start_task >> train_model_task >> end_task
